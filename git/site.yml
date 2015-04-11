@@ -1,0 +1,16 @@
+---
+- hosts: 127.0.0.1
+  user: ubuntu
+  vars_prompt:
+    git_user_name: Enter your git username
+    git_user_email: Enter your email for git
+  tasks:
+    - name: apt-get install git
+      apt: pkg=git
+      sudo: yes
+    - name: initialize git config.
+      sudo: no
+      command: '{{ item }}'
+      with_items:
+        - git config --global user.name  '{{ git_user_name  }}'
+        - git config --global user.email '{{ git_user_email }}'
