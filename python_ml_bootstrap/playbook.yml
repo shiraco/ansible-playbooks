@@ -1,0 +1,61 @@
+---
+- hosts: ec2
+  vars:
+    python_version: 3.4.3
+    user: ubuntu
+    home: /home/{{user}}
+  remote_user: ubuntu
+
+  tasks:
+    - name: apt-get updates a server
+      apt: update_cache=yes
+      sudo: yes
+
+    - name: apt-get upgrade a server
+      apt: upgrade=full
+      sudo: yes
+
+    - name: apt-get install basic pkg
+      apt: pkg={{item}} state=installed
+      sudo: yes
+      with_items:
+      - git
+      - gcc
+      - build-essential
+      - zlib1g-dev
+      - libbz2-dev
+      - libssl-dev
+      - libreadline-dev
+      - libsqlite3-dev
+
+    - name: pyenv | check pyenv installed
+      command: test -x {{home}}/.pyenv/bin/pyenv
+      register: pyenv_present
+      ignore_errors: yes
+
+    - name: install pyenv
+      git: repo=https://github.com/yyuu/pyenv.git dest={{home}}/.pyenv/
+      when: pyenv_present|failed
+
+    - name: Set bash_profile config
+      copy: src=files/bash_profile dest={{home}}/.bash_profile
+      sudo: no
+      when: pyenv_present|failed
+
+    - name: install pyenv
+      shell: . {{home}}/.bash_profile &&  pyenv install -s {{python_version}} && pyenv rehash && pyenv global {{python_version}}
+      when: pyenv_present|failed
+
+    - name: pip install pkgs
+      pip: name={{item}} state=latest executable={{home}}/.pyenv/shims/pip
+      with_items:
+      - pip
+      - virtualenv
+
+    - name: list installed python yversion
+      shell: . {{home}}/.bash_profile && pyenv versions
+      sudo: no
+      register: py_versions
+
+    - debug: var=py_versions
+
