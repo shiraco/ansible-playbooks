@@ -1,6 +1,19 @@
 ## Usage
 
 ```
+$ vim ~/.ssh/config
+```
+
+```text:~/.ssh/config
+Host ec2_bootstrap
+  HostName ec2-XXX-XXX-XXX-XXX.ap-northeast-1.compute.amazonaws.com
+  User ubuntu
+  IdentityFile ~/.ssh/hoge.pem
+```
+
+### Run playbook
+
+```
 ansible-playbook playbook.yml
 ```
 
