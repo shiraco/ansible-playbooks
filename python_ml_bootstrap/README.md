@@ -1,3 +1,7 @@
+## Notice
+
+*when using aws ec2, scipy needs spec of instance type over the t2.small*
+
 ## Usage
 
 ```

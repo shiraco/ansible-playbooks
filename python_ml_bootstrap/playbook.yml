@@ -30,27 +30,27 @@
 
     - name: Check pyenv installed
       command: test -x {{home}}/.pyenv/bin/pyenv
-      register: pyenv_exists
+      register: pyenv_existence
       ignore_errors: yes
 
     - name: install pyenv
       git: repo=https://github.com/yyuu/pyenv.git dest={{home}}/.pyenv/
-      when: pyenv_exists|failed
+      when: pyenv_existence|failed
       ignore_errors: yes
 
     - name: Check .bash_profile exists
       stat: path={{home}}/.bash_profile
-      register: bash_profile_exists
+      register: bash_profile_existence
 
     - name: Set bash_profile config
       copy: src=files/bash_profile dest={{home}}/.bash_profile
       sudo: no
-      when: bash_profile_exists.stat.md5 is not defined
+      when: bash_profile_existence.stat.md5 is not defined
       ignore_errors: yes
 
     - name: install pyenv
       shell: . {{home}}/.bash_profile &&  pyenv install -s {{python_version}} && pyenv rehash && pyenv global {{python_version}}
-      when: pyenv_exists|failed
+      when: pyenv_existence|failed
 
     - name: pip install pkgs
       pip: name={{item}} state=latest executable={{home}}/.pyenv/shims/pip
@@ -65,3 +65,36 @@
 
     - debug: var=py_versions
 
+    - name: virtualenv install
+      pip: name={{item}} state=latest virtualenv={{home}}/venv virtualenv_command={{home}}/.pyenv/shims/virtualenv virtualenv_site_packages=no
+      sudo: no
+      with_items:
+      - ipython
+      - numpy
+      - scipy
+      - scikit-learn
+      - cython
+
+    - name: apt-get install basic pkg
+      apt: pkg={{item}} state=installed
+      sudo: yes
+      with_items:
+      - pkg-config
+      - gfortran
+      - libopenblas-dev
+      - libblas-dev
+      - liblapack-dev
+      - libpng-dev
+      - libjpeg8-dev
+      - libfreetype6
+      - libfreetype6-dev
+
+    - name: virtualenv install
+      pip: name={{item}} state=latest virtualenv={{home}}/venv virtualenv_command={{home}}/.pyenv/shims/virtualenv virtualenv_site_packages=no
+      sudo: no
+      with_items:
+      - tornado
+      - pytz
+      - six
+      - pyparsing
+      - matplotlib
