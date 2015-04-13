@@ -65,16 +65,6 @@
 
     - debug: var=py_versions
 
-    - name: virtualenv install
-      pip: name={{item}} state=latest virtualenv={{home}}/venv virtualenv_command={{home}}/.pyenv/shims/virtualenv virtualenv_site_packages=no
-      sudo: no
-      with_items:
-      - ipython
-      - numpy
-      - scipy
-      - scikit-learn
-      - cython
-
     - name: apt-get install basic pkg
       apt: pkg={{item}} state=installed
       sudo: yes
@@ -93,6 +83,11 @@
       pip: name={{item}} state=latest virtualenv={{home}}/venv virtualenv_command={{home}}/.pyenv/shims/virtualenv virtualenv_site_packages=no
       sudo: no
       with_items:
+      - ipython
+      - numpy
+      - scipy
+      - scikit-learn
+      - cython
       - tornado
       - pytz
       - six
