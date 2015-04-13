@@ -93,3 +93,6 @@
       - six
       - pyparsing
       - matplotlib
+      - pyzmq
+      - jinja2
+      - jsonschema
