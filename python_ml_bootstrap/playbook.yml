@@ -4,16 +4,39 @@
     python_version: 3.4.3
     user: ubuntu
     home: /home/{{user}}
+    swap_file_path: /swapfile
+    swap_file_size_mb: 1024
   remote_user: ubuntu
 
   tasks:
     - name: apt-get updates a server
       apt: update_cache=yes
       sudo: yes
+      tags: initial_setup
 
     - name: apt-get upgrade a server
       apt: upgrade=full
       sudo: yes
+      tags: initial_setup
+
+    - name: create swapfile for installing scipy
+      command: dd if=/dev/zero of={{swap_file_path}} bs=1M count={{swap_file_size_mb}}
+      sudo: yes
+      register: swapfile
+      when: ansible_swaptotal_mb < 1
+      tags: swapon
+
+    - name: mkswap
+      command: mkswap {{swap_file_path}}
+      sudo: yes
+      when: ansible_swaptotal_mb < 1
+      tags: swapon
+
+    - name: swapon
+      command: swapon {{swap_file_path}}
+      sudo: yes
+      when: ansible_swaptotal_mb < 1
+      tags: swapon
 
     - name: apt-get install basic pkg
       apt: pkg={{item}} state=installed
@@ -27,45 +50,54 @@
       - libssl-dev
       - libreadline-dev
       - libsqlite3-dev
+      tags: pyenv
 
-    - name: Check pyenv installed
+    - name: check pyenv is installed
       command: test -x {{home}}/.pyenv/bin/pyenv
       register: pyenv_existence
       ignore_errors: yes
+      tags: pyenv
 
-    - name: install pyenv
+    - name: git clone pyenv
       git: repo=https://github.com/yyuu/pyenv.git dest={{home}}/.pyenv/
       when: pyenv_existence|failed
       ignore_errors: yes
+      tags: pyenv
 
-    - name: Check .bash_profile exists
+    - name: check .bash_profile is exist
       stat: path={{home}}/.bash_profile
       register: bash_profile_existence
+      tags: pyenv
 
-    - name: Set bash_profile config
+    - name: set .bash_profile config by copying from file
       copy: src=files/bash_profile dest={{home}}/.bash_profile
       sudo: no
       when: bash_profile_existence.stat.md5 is not defined
       ignore_errors: yes
+      tags: pyenv
 
-    - name: install pyenv
+    - name: install pyenv's python and rehash
       shell: . {{home}}/.bash_profile &&  pyenv install -s {{python_version}} && pyenv rehash && pyenv global {{python_version}}
       when: pyenv_existence|failed
+      tags: pyenv
 
-    - name: pip install pkgs
+    - name: pip install global python pkgs
       pip: name={{item}} state=latest executable={{home}}/.pyenv/shims/pip
       with_items:
       - pip
       - virtualenv
+      tags: global_python
 
     - name: list installed python yversion
       shell: . {{home}}/.bash_profile && pyenv versions
       sudo: no
       register: py_versions
+      tags: global_python
 
     - debug: var=py_versions
+      tags: global_python
 
-    - name: apt-get install basic pkg
+    - name: apt-get install pkg for python ml libraries
       apt: pkg={{item}} state=installed
       sudo: yes
       with_items:
@@ -78,14 +110,22 @@
       - libjpeg8-dev
       - libfreetype6
       - libfreetype6-dev
+      tags: global_python
 
-    - name: virtualenv install
+    # pip install scipy at first because scipy needs a lot of memory size
+    - name: create virtualenv 'venv' and pip install scipy in 'venv'
+      pip: name={{item}} state=latest virtualenv={{home}}/venv virtualenv_command={{home}}/.pyenv/shims/virtualenv virtualenv_site_packages=no
+      sudo: no
+      with_items:
+      - scipy  
+      tags: venv_python
+
+    - name: pip install python ml libraries in 'venv'
       pip: name={{item}} state=latest virtualenv={{home}}/venv virtualenv_command={{home}}/.pyenv/shims/virtualenv virtualenv_site_packages=no
       sudo: no
       with_items:
       - ipython
       - numpy
-      - scipy
       - scikit-learn
       - cython
       - tornado
@@ -96,3 +136,12 @@
       - pyzmq
       - jinja2
       - jsonschema
+      - pandas
+      tags: venv_python
+
+    - name: swapoff
+      command: swapoff {{swap_file_path}}
+      sudo: yes
+      when: ansible_swaptotal_mb >= 1
+      tags: swapoff 
+
