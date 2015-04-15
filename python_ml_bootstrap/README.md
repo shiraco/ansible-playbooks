@@ -17,7 +17,7 @@ Host ec2_bootstrap
 ### Run playbook
 
 ```
-ansible-playbook playbook.yml
+ansible-playbook tasks/main.yml
 ```
 
 ## References
