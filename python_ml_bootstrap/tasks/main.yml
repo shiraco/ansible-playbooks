@@ -73,7 +73,7 @@
       tags: pyenv
 
     - name: set .bash_profile config by copying from file
-      copy: src=files/bash_profile dest={{ home }}/.bash_profile
+      copy: src=../files/bash_profile dest={{ home }}/.bash_profile
       sudo: no
       when: bash_profile_existence.stat.md5 is not defined
       ignore_errors: yes
