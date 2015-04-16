@@ -37,11 +37,6 @@ ubuntu@ip-xxx-xxx-xxx-xxx:~$ . venv/bin/activate
 
 Open browser and access `http://ec2-XXX-XXX-XXX-XXX.ap-northeast-1.compute.amazonaws.com:8888/` .
 
-
-```
-$ ipython notebook --profile=nbserver
-```
-
 ## References
 
 * http://supportex.net/blog/2014/10/ansible-installing-pyenv-centos/
