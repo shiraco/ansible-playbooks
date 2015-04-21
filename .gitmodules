@@ -1,0 +1,3 @@
+[submodule "ansible_ipython_machineleaning_bootstrap"]
+	path = ansible_ipython_machineleaning_bootstrap
+	url = git@github.com:shiraco/ansible_ipython_machineleaning_bootstrap.git
