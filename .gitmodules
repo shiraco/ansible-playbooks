@@ -4,3 +4,6 @@
 [submodule "ansible_ipython_machineleaning_bootstrap_conda"]
 	path = ansible_ipython_machineleaning_bootstrap_conda
 	url = git@github.com:shiraco/ansible_ipython_machineleaning_bootstrap_conda.git
+[submodule "ansible_RNN_colle"]
+	path = ansible_RNN_colle
+	url = git@github.com:shiraco/ansible_RNN_colle.git
